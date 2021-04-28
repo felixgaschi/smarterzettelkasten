@@ -2,17 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/felixgaschi/smarterzettelkasten/file_explorer"
+	log "github.com/sirupsen/logrus"
 )
 
-func promptStringAsync(s1, s2 string, ch chan bool) {
-	fmt.Printf("%s/%s\n", s1, s2)
-	ch <- true
-}
-
 func main() {
-	ch := make(chan bool)
-	go file_explorer.ApplyToLeavesBeforeRootAsync(".", ChangePrefixAsync("file_", "file_"), ch)
-	<-ch
+	args := os.Args[1:]
+	if len(args) != 1 {
+		log.Error(fmt.Sprintf("Smarterzettelkasten requires one and only one argument, got %d", len(args)))
+		return
+	}
+	RefreshGlobalInfo(args[0])
 }

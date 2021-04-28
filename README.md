@@ -22,6 +22,7 @@ This allows to:
 
 ## TODO
 
+- [x] Add function to collect all links between notes and all tags
 - [ ] Add operation to rename a note and all the mentions of the note
 - [ ] Add operation to rename all mentions of a tag
 - [ ] Add checking for rule 3

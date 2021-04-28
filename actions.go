@@ -19,3 +19,7 @@ func ChangePrefixAsync(oldPrefix, newPrefix string) func(string, string, chan bo
 		quit <- true
 	}
 }
+
+func RenameNote(base, fname, newFname string) {
+	os.Rename(path.Join(base, fname), path.Join(base, newFname))
+}

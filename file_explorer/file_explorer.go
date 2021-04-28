@@ -26,23 +26,24 @@ func ApplyToAllFiles(dir string, f func(string)) error {
 // ApplyToAllFilesAsync applies a given function recursively and concurrently to all files inside
 // a given direrectory and its subdirectories
 // returns an error
-func ApplyToAllFilesAsync(dir string, f func(string, chan bool), ch chan bool) error {
+func ApplyToAllFilesAsync(dir string, f func(string, string, chan bool), ch chan bool) error {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		ch <- true
 		return err
 	}
-	childChan := make(chan bool, 2)
-	childChan <- true
+
+	childChan := make(chan bool, len(files))
 	for _, file := range files {
 		if file.IsDir() {
 			go ApplyToAllFilesAsync(path.Join(dir, file.Name()), f, childChan)
 		} else {
-			go f(path.Join(dir, file.Name()), childChan)
+			go f(dir, file.Name(), childChan)
 		}
+	}
+	for range files {
 		<-childChan
 	}
-	<-childChan
 	ch <- true
 	return nil
 }
