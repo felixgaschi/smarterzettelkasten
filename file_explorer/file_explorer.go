@@ -1,27 +1,11 @@
 package file_explorer
 
 import (
+	"fmt"
+	"io/fs"
 	"os"
 	"path"
 )
-
-// ApplyToAllFiles applies a given function recursively to all files inside
-// a given direrectory and its subdirectories
-// returns an error
-func ApplyToAllFiles(dir string, f func(string)) error {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			ApplyToAllFiles(file.Name(), f)
-		} else {
-			f(file.Name())
-		}
-	}
-	return nil
-}
 
 // ApplyToAllFilesAsync applies a given function recursively and concurrently to all files inside
 // a given direrectory and its subdirectories
@@ -48,37 +32,31 @@ func ApplyToAllFilesAsync(dir string, f func(string, string, chan bool), ch chan
 	return nil
 }
 
-func ApplyToLeavesBeforeRoot(dir string, f func(string)) error {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			ApplyToLeavesBeforeRoot(path.Join(dir, file.Name()), f)
-		}
-		f(path.Join(dir, file.Name()))
-	}
-	return nil
-}
-
-func ApplyToLeavesBeforeRootAsync(dir string, f func(string, string, chan bool), quit chan bool) error {
-	files, err := os.ReadDir(dir)
-	if err != nil {
+// ApplyToAllFilesAsync applies a given function recursively and concurrently to all files inside
+// a given direrectory and its subdirectories and it insures to run the script on children directories
+// and files before parents
+func ApplyToLeavesBeforeRootAsync(dir string, f func(string, string, chan bool), quit chan bool) {
+	defer func(quit chan bool) {
 		quit <- true
-		return err
+	}(quit)
+
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
-	quitChild := make(chan bool, 2)
-	quitChild <- true
+	quitChild := make(chan bool, len(files))
 	for _, file := range files {
-		if file.IsDir() {
-			ApplyToLeavesBeforeRootAsync(path.Join(dir, file.Name()), f, quitChild)
-			<-quitChild
-		}
-		go f(dir, file.Name(), quitChild)
+		go func(dir string, f func(string, string, chan bool), second_quit chan bool, file fs.DirEntry) {
+			if file.IsDir() {
+				first_quit := make(chan bool)
+				go ApplyToLeavesBeforeRootAsync(path.Join(dir, file.Name()), f, first_quit)
+				<-first_quit
+			}
+			go f(dir, file.Name(), second_quit)
+		}(dir, f, quitChild, file)
+	}
+	for range files {
 		<-quitChild
 	}
-	<-quitChild
-	quit <- true
-	return nil
 }
