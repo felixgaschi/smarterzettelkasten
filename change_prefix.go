@@ -58,7 +58,6 @@ func ChangePrefix(dir, oldPrefix, newPrefix string) error {
 			break
 		}
 	}
-	fmt.Println(newBacklinks)
 	//perform change
 	quit = make(chan bool)
 	go fileexplorer.ApplyToAllFilesAsync(dir, WrapSwitchBackLinks(newBacklinks, make(map[string]string)), quit)
