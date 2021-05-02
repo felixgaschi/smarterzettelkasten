@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	file_explorer "github.com/felixgaschi/smarterzettelkasten/file_explorer"
+	"github.com/felixgaschi/smarterzettelkasten/fileexplorer"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,7 +41,7 @@ func ChangePrefix(dir, oldPrefix, newPrefix string) error {
 	newTitles := make(chan [2]string)
 	quit := make(chan bool)
 	newBacklinks := make(map[string]string)
-	go file_explorer.ApplyToLeavesBeforeRootAsync(dir, ChangeFileAndDirPrefix(oldPrefix, newPrefix, newTitles), quit)
+	go fileexplorer.ApplyToLeavesBeforeRootAsync(dir, ChangeFileAndDirPrefix(oldPrefix, newPrefix, newTitles), quit)
 	closed := false
 	for {
 		select {
@@ -61,7 +61,7 @@ func ChangePrefix(dir, oldPrefix, newPrefix string) error {
 	fmt.Println(newBacklinks)
 	//perform change
 	quit = make(chan bool)
-	go file_explorer.ApplyToAllFilesAsync(dir, WrapSwitchBackLinks(newBacklinks, make(map[string]string)), quit)
+	go fileexplorer.ApplyToAllFilesAsync(dir, WrapSwitchBackLinks(newBacklinks, make(map[string]string)), quit)
 	<-quit
 	return nil
 }

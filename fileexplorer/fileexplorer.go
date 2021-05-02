@@ -1,4 +1,4 @@
-package file_explorer
+package fileexplorer
 
 import (
 	"fmt"
