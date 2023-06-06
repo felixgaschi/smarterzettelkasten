@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -27,5 +28,7 @@ func main() {
 		oldtag := checkNextArg(args[2:], "Wrong usage: 'zlk change-tag <dir> <oldtag> <newtag>")
 		newtag := checkNextArg(args[3:], "Wrong usage: 'zlk change-tag <dir> <oldtag> <newtag>")
 		ChangeTag(dir, oldtag, newtag)
+	default:
+		log.Fatal(fmt.Sprintf("Unknown command '%s'. Expects 'change-prefix' or 'change-tag'", firstarg))
 	}
 }

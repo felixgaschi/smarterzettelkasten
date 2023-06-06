@@ -1,6 +1,9 @@
 .PHONY: 
 
-install: 
+build: .PHONY
+	go build -o ~/smarterzettelkasten/szk
+
+install: .PHONY
 	go build -o ~/smarterzettelkasten/szk
 	echo "" >> ~/.bash_profile
 	echo "# The next line updates PATH for Smarterzettelkasten" >> ~/.bash_profile
